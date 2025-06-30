@@ -6,6 +6,9 @@
     <artifactId>mini-market-parent</artifactId>
     <version>25.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <modules>
+        <module>manager-app</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -26,4 +29,16 @@
         </dependencies>
     </dependencyManagement>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
