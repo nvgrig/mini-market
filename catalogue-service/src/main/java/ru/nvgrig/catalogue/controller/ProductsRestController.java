@@ -11,7 +11,6 @@ import ru.nvgrig.catalogue.controller.payload.NewProductPayload;
 import ru.nvgrig.catalogue.entity.Product;
 import ru.nvgrig.catalogue.service.ProductService;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,8 +20,8 @@ public class ProductsRestController {
     private final ProductService productService;
 
     @GetMapping
-    public List<Product> findProducts() {
-        return productService.findAllProducts();
+    public Iterable<Product> findProducts(@RequestParam(name = "filter", required = false) String filter) {
+        return productService.findAllProducts(filter);
     }
 
     @PostMapping
