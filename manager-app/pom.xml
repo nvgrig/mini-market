@@ -70,6 +70,7 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
