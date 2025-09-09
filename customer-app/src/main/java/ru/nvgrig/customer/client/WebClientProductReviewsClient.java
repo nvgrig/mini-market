@@ -37,6 +37,6 @@ public class WebClientProductReviewsClient implements ProductReviewsClient {
                 .onErrorMap(WebClientResponseException.BadRequest.class,
                         exception -> new ClientBadRequestException(exception,
                                 ((List<String>) exception.getResponseBodyAs(ProblemDetail.class)
-                                        .getProperties().get("error"))));
+                                        .getProperties().get("errors"))));
     }
 }

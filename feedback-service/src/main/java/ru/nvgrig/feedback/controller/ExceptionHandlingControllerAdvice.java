@@ -16,7 +16,7 @@ public class ExceptionHandlingControllerAdvice {
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ProblemDetail>> handleWebExchangeBindException(WebExchangeBindException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problemDetail.setProperty("error", exception.getAllErrors().stream()
+        problemDetail.setProperty("errors", exception.getAllErrors().stream()
                 .map(ObjectError::getDefaultMessage)
                 .toList());
 
