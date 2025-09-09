@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
+import ru.nvgrig.customer.client.FavoriteProductsClient;
 import ru.nvgrig.customer.client.ProductsClient;
 import ru.nvgrig.customer.entity.FavoriteProduct;
-import ru.nvgrig.customer.service.FavoriteProductService;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,7 +17,7 @@ import ru.nvgrig.customer.service.FavoriteProductService;
 public class ProductsController {
 
     private final ProductsClient productsClient;
-    private final FavoriteProductService favoriteProductService;
+    private final FavoriteProductsClient favoriteProductsClient;
 
     @GetMapping("list")
     public Mono<String> getProductsListPage(Model model, @RequestParam(name = "filter", required = false) String filter) {
@@ -32,8 +32,8 @@ public class ProductsController {
     public Mono<String> getFavoriteProductPage(Model model,
                                                @RequestParam(name = "filter", required = false) String filter) {
         model.addAttribute("filter", filter);
-        return favoriteProductService.findFavoriteProducts()
-                .map(FavoriteProduct::getProductId)
+        return favoriteProductsClient.findFavoriteProducts()
+                .map(FavoriteProduct::productId)
                 .collectList()
                 .flatMap(favoriteProducts -> productsClient.findAllProducts(filter)
                         .filter(product -> favoriteProducts.contains(product.id()))
