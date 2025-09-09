@@ -1,8 +1,8 @@
-package ru.nvgrig.customer.service;
+package ru.nvgrig.feedback.service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.nvgrig.customer.entity.ProductReview;
+import ru.nvgrig.feedback.entity.ProductReview;
 
 public interface ProductReviewsService {
 
