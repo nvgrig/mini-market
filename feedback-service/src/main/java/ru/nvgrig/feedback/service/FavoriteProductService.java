@@ -6,11 +6,11 @@ import ru.nvgrig.feedback.entity.FavoriteProduct;
 
 public interface FavoriteProductService {
 
-    Mono<FavoriteProduct> addProductToFavorites(int productId);
+    Mono<FavoriteProduct> addProductToFavorites(int productId, String userId);
 
-    Mono<Void> removeProductFromFavorites(int productId);
+    Mono<Void> removeProductFromFavorites(int productId, String userId);
 
-    Mono<FavoriteProduct> findFavoriteProductByProduct(int productId);
+    Mono<FavoriteProduct> findFavoriteProductByProduct(int productId, String userId);
 
-    Flux<FavoriteProduct> findFavoriteProducts();
+    Flux<FavoriteProduct> findFavoriteProducts(String userId);
 }
