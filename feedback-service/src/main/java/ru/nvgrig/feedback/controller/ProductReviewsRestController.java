@@ -1,5 +1,7 @@
 package ru.nvgrig.feedback.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ public class ProductReviewsRestController {
 //    private final ReactiveMongoTemplate reactiveMongoTemplate;
 
     @GetMapping("by-product-id/{productId}")
+    @Operation(security = @SecurityRequirement(name = "keycloak"))
     public Flux<ProductReview> findProductReviewsByProductId(@PathVariable("productId") int productId) {
         return productReviewsService.findProductReviewsByProduct(productId);
 //        return reactiveMongoTemplate
