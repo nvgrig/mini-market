@@ -11,6 +11,7 @@
         <module>catalogue-service</module>
         <module>customer-app</module>
         <module>feedback-service</module>
+        <module>admin-server</module>
     </modules>
 
     <properties>

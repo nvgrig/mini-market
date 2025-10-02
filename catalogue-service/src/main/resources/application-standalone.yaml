@@ -14,6 +14,26 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8082/realms/market
+      client:
+        registration:
+          keycloak:
+            client-id: catalogue-service-metrics-client
+            client-secret: EKXWtvOpST737eALxRxGnxNei8iMDv20
+            authorization-grant-type: client_credentials
+            scope:
+              - metrics_server
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/market
+
+  boot:
+    admin:
+      client:
+        enabled: true
+        instance:
+          name: catalogue-service
+          service-host-type: ip
+        url: http://localhost:8085
 server:
   port: 8081
 logging:
@@ -26,3 +46,13 @@ springdoc:
       use-pkce-with-authorization-code-grant: true
 keycloak:
   uri: http://localhost:8082
+management:
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'

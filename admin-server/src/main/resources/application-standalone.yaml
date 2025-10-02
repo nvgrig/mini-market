@@ -1,0 +1,26 @@
+server:
+  port: 8085
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/market
+        registration:
+          keycloak:
+            authorization-grant-type: client_credentials
+            scope:
+              - metrics
+            client-id: admin-service
+            client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+          login:
+            provider: keycloak
+            scope:
+              - metrics
+              - openid
+            client-id: admin-service
+            client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/market
