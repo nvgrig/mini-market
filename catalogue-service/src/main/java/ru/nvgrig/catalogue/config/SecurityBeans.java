@@ -15,6 +15,10 @@ public class SecurityBeans {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .securityMatchers(customizer -> customizer
+                        .requestMatchers(HttpMethod.POST, "/instances")
+                        .requestMatchers(HttpMethod.DELETE, "/instances/*")
+                        .requestMatchers("/actuator/**"))
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "catalogue-api/products")
@@ -25,6 +29,9 @@ public class SecurityBeans {
                         .hasAuthority("SCOPE_edit_catalogue")
                         .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
                         .requestMatchers(HttpMethod.GET).hasAuthority("SCOPE_view_catalogue")
+                        .requestMatchers("/instances", "/instances/*")
+                        .hasAuthority("SCOPE_metrics_server")
+                        .requestMatchers("/actuator/**").hasAuthority("SCOPE_metrics")
                         .anyRequest().denyAll())
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement
