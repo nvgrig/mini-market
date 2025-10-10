@@ -24,7 +24,7 @@ spring:
               - metrics_server
         provider:
           keycloak:
-            issuer-uri: http://localhost:8082/realms/market
+            issuer-uri: http://host.docker.internal:8082/realms/market
 
   boot:
     admin:
@@ -34,6 +34,8 @@ spring:
           name: catalogue-service
           service-host-type: ip
         url: http://localhost:8085
+  application:
+    name: market-catalogue-service
 server:
   port: 8081
 logging:
@@ -58,3 +60,9 @@ management:
         include:
           - health
           - prometheus
+  zipkin:
+    tracing:
+      endpoint: http://host.docker.internal:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
