@@ -18,18 +18,18 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://host.docker.internal:8082/realms/market
+          issuer-uri: http://localhost:8082/realms/market
       client:
         registration:
           keycloak:
-            client-id: feedback-service-metrics-client
+            client-id: feedback-service
             client-secret: Q2BOfWOfL85qJ9MA6fvLz9j56CQEcmHY
             authorization-grant-type: client_credentials
             scope:
               - metrics_server
         provider:
           keycloak:
-            issuer-uri: http://host.docker.internal:8082/realms/market
+            issuer-uri: http://localhost:8082/realms/market
 springdoc:
   swagger-ui:
     oauth:
@@ -49,7 +49,7 @@ management:
         include: '*'
   zipkin:
     tracing:
-      endpoint: http://host.docker.internal:9411/api/v2/spans
+      endpoint: http://localhost:9411/api/v2/spans
   tracing:
     sampling:
       probability: 1.0

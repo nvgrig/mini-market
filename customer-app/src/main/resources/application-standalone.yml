@@ -13,11 +13,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://host.docker.internal:8082/realms/market
+          issuer-uri: http://localhost:8082/realms/market
       client:
         provider:
           keycloak:
-            issuer-uri: http://host.docker.internal:8082/realms/market
+            issuer-uri: http://localhost:8082/realms/market
             user-name-attribute: preferred_username
         registration:
           keycloak:
@@ -38,7 +38,7 @@ management:
         include: '*'
   zipkin:
     tracing:
-      endpoint: http://host.docker.internal:9411/api/v2/spans
+      endpoint: http://localhost:9411/api/v2/spans
   tracing:
     sampling:
       probability: 1.0

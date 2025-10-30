@@ -13,18 +13,18 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://host.docker.internal:8082/realms/market
+          issuer-uri: http://localhost:8082/realms/market
       client:
         registration:
           keycloak:
-            client-id: catalogue-service-metrics-client
+            client-id: catalogue-service
             client-secret: EKXWtvOpST737eALxRxGnxNei8iMDv20
             authorization-grant-type: client_credentials
             scope:
               - metrics_server
         provider:
           keycloak:
-            issuer-uri: http://host.docker.internal:8082/realms/market
+            issuer-uri: http://localhost:8082/realms/market
 
   boot:
     admin:

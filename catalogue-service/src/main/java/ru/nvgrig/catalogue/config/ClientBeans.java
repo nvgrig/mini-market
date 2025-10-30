@@ -2,6 +2,7 @@ package ru.nvgrig.catalogue.config;
 
 import de.codecentric.boot.admin.client.registration.BlockingRegistrationClient;
 import de.codecentric.boot.admin.client.registration.RegistrationClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 public class ClientBeans {
 
     @Bean
+    @ConditionalOnProperty(name = "spring.boot.admin.client.enabled", havingValue = "true")
     public RegistrationClient registrationClient(
             ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientService authorizedClientService
@@ -29,7 +31,7 @@ public class ClientBeans {
                     if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(OAuth2AuthorizeRequest
                                 .withClientRegistrationId("keycloak")
-                                .principal("catalogue-service-metrics-client")
+                                .principal("catalogue-service")
                                 .build());
                         request.getHeaders().setBearerAuth(authorizedClient.getAccessToken().getTokenValue());
                     }

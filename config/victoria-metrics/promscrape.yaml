@@ -1,70 +1,70 @@
 scrape_configs:
   - job_name: market_admin_service
     static_configs:
-      - targets: ["http://host.docker.internal:8085"]
+      - targets: ["http://localhost:8085"]
         labels:
           application: market_admin_service
     metrics_path: /actuator/prometheus
     oauth2:
       client_id: victoria-metrics
       client_secret: MWFxenChk9FfTUKwQEUiy41mx26c2NF1
-      token_url: http://host.docker.internal:8082/realms/market/protocol/openid-connect/token
+      token_url: http://localhost:8082/realms/market/protocol/openid-connect/token
       scopes:
         - metrics
       endpoint_params:
         grant_type: client_credentials
   - job_name: market_catalogue_service
     static_configs:
-      - targets: [ "http://host.docker.internal:8081" ]
+      - targets: [ "http://localhost:8081" ]
         labels:
           application: market_catalogue_service
     metrics_path: /actuator/prometheus
     oauth2:
       client_id: victoria-metrics
       client_secret: MWFxenChk9FfTUKwQEUiy41mx26c2NF1
-      token_url: http://host.docker.internal:8082/realms/market/protocol/openid-connect/token
+      token_url: http://localhost:8082/realms/market/protocol/openid-connect/token
       scopes:
         - metrics
       endpoint_params:
         grant_type: client_credentials
   - job_name: market_market-app
     static_configs:
-      - targets: [ "http://host.docker.internal:8080" ]
+      - targets: [ "http://localhost:8080" ]
         labels:
           application: market_market
     metrics_path: /actuator/prometheus
     oauth2:
       client_id: victoria-metrics
       client_secret: MWFxenChk9FfTUKwQEUiy41mx26c2NF1
-      token_url: http://host.docker.internal:8082/realms/market/protocol/openid-connect/token
+      token_url: http://localhost:8082/realms/market/protocol/openid-connect/token
       scopes:
         - metrics
       endpoint_params:
         grant_type: client_credentials
   - job_name: market_feedback_service
     static_configs:
-      - targets: [ "http://host.docker.internal:8084" ]
+      - targets: [ "http://localhost:8084" ]
         labels:
           application: market_feedback_service
     metrics_path: /actuator/prometheus
     oauth2:
       client_id: victoria-metrics
       client_secret: MWFxenChk9FfTUKwQEUiy41mx26c2NF1
-      token_url: http://host.docker.internal:8082/realms/market/protocol/openid-connect/token
+      token_url: http://localhost:8082/realms/market/protocol/openid-connect/token
       scopes:
         - metrics
       endpoint_params:
         grant_type: client_credentials
   - job_name: market_customer_app
     static_configs:
-      - targets: [ "http://host.docker.internal:8083" ]
+      - targets: [ "http://localhost:8083" ]
         labels:
           application: market_customer_app
     metrics_path: /actuator/prometheus
     oauth2:
       client_id: victoria-metrics
       client_secret: MWFxenChk9FfTUKwQEUiy41mx26c2NF1
-      token_url: http://host.docker.internal:8082/realms/market/protocol/openid-connect/token
+      token_url: http://localhost:8082/realms/market/protocol/openid-connect/token
       scopes:
         - metrics
       endpoint_params:
