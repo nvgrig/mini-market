@@ -1,0 +1,10 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: market-config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:///C:/Projects/mini-market/config/cloud/{application}/{profile}
