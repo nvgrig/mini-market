@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalogue-service-config
+data:
+  application-k8s.yml : |
+    springdoc:
+      swagger-ui:
+        oauth:
+          client-id: catalogue-service-swagger-ui
+          use-pkce-with-authorization-code-grant: true
+    keycloak:
+      uri: http://host.docker.internal:8080
+    management:
+      health:
+        livenessstate:
+          enabled: true
+        readinessstate:
+          enabled: true
+      endpoints:
+        web:
+          exposure:
+            include: '*'
+    eureka:
+      client:
+        enabled: false
+    server:
+      forward-headers-strategy: framework
+      port: 8080
+    spring:
+      application:
+        name: market-catalogue-service
+      boot:
+        admin:
+          client:
+            enabled: true
+            instance:
+              service-host-type: ip
+            url: http://market-admin-server-svc.default.svc.cluster.local:8080
+      cloud:
+        config:
+          enabled: false
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: http://host.docker.internal:8080/realms/market
+          client:
+            registration:
+              keycloak:
+                client-id: catalogue-service
+                client-secret: EKXWtvOpST737eALxRxGnxNei8iMDv20
+                authorization-grant-type: client_credentials
+                scope:
+                  - metrics_server
+              discovery:
+                provider: keycloak
+                client-id: catalogue-service
+                client-secret: EKXWtvOpST737eALxRxGnxNei8iMDv20
+                authorization-grant-type: client_credentials
+                scope:
+                  - discovery
+            provider:
+              keycloak:
+                issuer-uri: http://host.docker.internal:8080/realms/market
+      datasource:
+        url: jdbc:postgresql://host.docker.internal:5432/catalogue
+        username: catalogue
+        password: catalogue
+      flyway:
+        schemas:
+          - public
+          - catalogue
+      jpa:
+        show-sql: true
+    logging:
+      level:
+        sql: info
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-catalogue-service-deployment
+  labels:
+    app: market-catalogue-service
+spec:
+  selector:
+    matchLabels:
+      app: market-catalogue-service
+  template:
+    metadata:
+      labels:
+        app: market-catalogue-service
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: catalogue-service-config
+      containers:
+        - name: market-catalogue-service
+          image: host.docker.internal:5000/market/catalogue-service:25.1.1
+          imagePullPolicy: Always
+          args:
+            - --spring.config.import=/etc/opt/catalogue-service/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/catalogue-service
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-catalogue-service-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-catalogue-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-catalogue-service-ingress
+spec:
+  rules:
+    - host: catalogue.api.mar.ket.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-catalogue-service-svc
+                port:
+                  name: http

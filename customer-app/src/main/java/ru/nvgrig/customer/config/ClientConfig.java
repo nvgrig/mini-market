@@ -24,26 +24,54 @@ import ru.nvgrig.customer.client.WebClientProductsClient;
 @Configuration
 public class ClientConfig {
 
-    @Bean
-    @LoadBalanced
-    @Scope("prototype")
-    public WebClient.Builder marketServicesWebClientBuilder(
-            ReactiveClientRegistrationRepository clientRegistrationRepository,
-            ServerOAuth2AuthorizedClientRepository authorizedClientRepository,
-            ObservationRegistry observationRegistry
-    ) {
-        ServerOAuth2AuthorizedClientExchangeFilterFunction filter = new ServerOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
-                authorizedClientRepository);
-        filter.setDefaultClientRegistrationId("keycloak");
-        return WebClient.builder()
-                .observationRegistry(observationRegistry)
-                .observationConvention(new DefaultClientRequestObservationConvention())
-                .filter(filter);
+    @Configuration
+    @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "false")
+    public static class StandaloneClientConfig {
+
+        @Bean
+        @Scope("prototype")
+        public WebClient.Builder marketServicesWebClientBuilder(
+                ReactiveClientRegistrationRepository clientRegistrationRepository,
+                ServerOAuth2AuthorizedClientRepository authorizedClientRepository,
+                ObservationRegistry observationRegistry
+        ) {
+            ServerOAuth2AuthorizedClientExchangeFilterFunction filter =
+                    new ServerOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+                            authorizedClientRepository);
+            filter.setDefaultClientRegistrationId("keycloak");
+            return WebClient.builder()
+                    .observationRegistry(observationRegistry)
+                    .observationConvention(new DefaultClientRequestObservationConvention())
+                    .filter(filter);
+        }
+    }
+
+    @Configuration
+    @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "true", matchIfMissing = true)
+    public static class CloudClientConfig {
+
+        @Bean
+        @LoadBalanced
+        @Scope("prototype")
+        public WebClient.Builder marketServicesWebClientBuilder(
+                ReactiveClientRegistrationRepository clientRegistrationRepository,
+                ServerOAuth2AuthorizedClientRepository authorizedClientRepository,
+                ObservationRegistry observationRegistry
+        ) {
+            ServerOAuth2AuthorizedClientExchangeFilterFunction filter =
+                    new ServerOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+                            authorizedClientRepository);
+            filter.setDefaultClientRegistrationId("keycloak");
+            return WebClient.builder()
+                    .observationRegistry(observationRegistry)
+                    .observationConvention(new DefaultClientRequestObservationConvention())
+                    .filter(filter);
+        }
     }
 
     @Bean
     public WebClientProductsClient webClientProductsClient(
-            @Value("${market.service.catalogue.uri:http://localhost:8081}") String catalogueBaseUrl,
+            @Value("${market.services.catalogue.uri:http://localhost:8081}") String catalogueBaseUrl,
             WebClient.Builder marketServicesWebClientBuilder
     ) {
         return new WebClientProductsClient(marketServicesWebClientBuilder
@@ -52,8 +80,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public WebClientFavoriteProductsClient webClientFavoriteProductsClient(
-            @Value("${market.service.feedback.uri:http://localhost:8084}") String feedbackBaseUrl,
+    public WebClientFavoriteProductsClient webClientFavouriteProductsClient(
+            @Value("${market.services.feedback.uri:http://localhost:8084}") String feedbackBaseUrl,
             WebClient.Builder marketServicesWebClientBuilder
     ) {
         return new WebClientFavoriteProductsClient(marketServicesWebClientBuilder
@@ -63,7 +91,7 @@ public class ClientConfig {
 
     @Bean
     public WebClientProductReviewsClient webClientProductReviewsClient(
-            @Value("${market.service.feedback.uri:http://localhost:8084}") String feedbackBaseUrl,
+            @Value("${market.services.feedback.uri:http://localhost:8084}") String feedbackBaseUrl,
             WebClient.Builder marketServicesWebClientBuilder
     ) {
         return new WebClientProductReviewsClient(marketServicesWebClientBuilder

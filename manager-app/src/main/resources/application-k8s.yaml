@@ -1,0 +1,67 @@
+market:
+  services:
+    catalogue:
+      uri: http://market-catalogue-service-svc.default.svc.cluster.local:8080
+      registration-id: keycloak
+server:
+  forward-headers-strategy: native
+  port: 8080
+spring:
+  application:
+    name: market-manager-app
+  boot:
+    admin:
+      client:
+        enabled: true
+        instance:
+          service-host-type: ip
+        url: http://market-admin-server-svc.default.svc.cluster.local:8080
+  cloud:
+    config:
+      enabled: false
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://host.docker.internal:8080/realms/market
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: manager-app
+            client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+            scope:
+              - openid
+              - view_catalogue
+              - edit_catalogue
+              - microprofile-jwt
+          metrics:
+            provider: keycloak
+            client-id: manager-app
+            client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+            authorization-grant-type: client_credentials
+            scope:
+              - metrics_server
+          discovery:
+            provider: keycloak
+            client-id: manager-app
+            client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+            authorization-grant-type: client_credentials
+            scope:
+              - discovery
+      resourceserver:
+        jwt:
+          issuer-uri: http://host.docker.internal:8080/realms/market
+management:
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+eureka:
+  client:
+    enabled: false

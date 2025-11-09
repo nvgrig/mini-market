@@ -24,20 +24,47 @@ import ru.nvgrig.manager.security.OAuthClientHttpRequestInterceptor;
 
 @Configuration
 public class ClientBeans {
-    @Bean
-    public RestClientProductsRestClient restClientProductsRestClient(
-            @Value("${market.service.catalogue.uri:http://localhost:8081}") String catalogueBaseUrl,
-            ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientRepository authorizedClientRepository,
-            @Value("${market.service.catalogue.registration-id:keycloak}") String registrationId,
-            LoadBalancerClient loadBalancerClient) {
-        return new RestClientProductsRestClient(RestClient.builder()
-                .baseUrl(catalogueBaseUrl)
-                .requestInterceptor(new LoadBalancerInterceptor(loadBalancerClient))
-                .requestInterceptor(new OAuthClientHttpRequestInterceptor(
-                        new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientRepository),
-                        registrationId))
-                .build());
+
+    @Configuration
+    @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "false")
+    public static class StandaloneClientConfig {
+
+        @Bean
+        public RestClientProductsRestClient productsRestClient(
+                @Value("${market.services.catalogue.uri:http://localhost:8081}") String catalogueBaseUri,
+                ClientRegistrationRepository clientRegistrationRepository,
+                OAuth2AuthorizedClientRepository authorizedClientRepository,
+                @Value("${market.services.catalogue.registration-id:keycloak}") String registrationId) {
+            return new RestClientProductsRestClient(RestClient.builder()
+                    .baseUrl(catalogueBaseUri)
+                    .requestInterceptor(
+                            new OAuthClientHttpRequestInterceptor(
+                                    new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository,
+                                            authorizedClientRepository), registrationId))
+                    .build());
+        }
+    }
+
+    @Configuration
+    @ConditionalOnProperty(name = "eureka.client.enabled", havingValue = "true", matchIfMissing = true)
+    public static class CloudClientConfig {
+
+        @Bean
+        public RestClientProductsRestClient productsRestClient(
+                @Value("${market.services.catalogue.uri:http://localhost:8081}") String catalogueBaseUri,
+                ClientRegistrationRepository clientRegistrationRepository,
+                OAuth2AuthorizedClientRepository authorizedClientRepository,
+                @Value("${market.services.catalogue.registration-id:keycloak}") String registrationId,
+                LoadBalancerClient loadBalancerClient) {
+            return new RestClientProductsRestClient(RestClient.builder()
+                    .baseUrl(catalogueBaseUri)
+                    .requestInterceptor(new LoadBalancerInterceptor(loadBalancerClient))
+                    .requestInterceptor(
+                            new OAuthClientHttpRequestInterceptor(
+                                    new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository,
+                                            authorizedClientRepository), registrationId))
+                    .build());
+        }
     }
 
     @Bean

@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: admin-server-config
+data:
+  application-k8s.yml: |
+    server:
+      port: 8080
+    spring:
+      application:
+        name: market-admin-server
+      cloud:
+        config:
+          enabled: false
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: http://host.docker.internal:8080/realms/market
+          client:
+            provider:
+              keycloak:
+                issuer-uri: http://host.docker.internal:8080/realms/market
+                user-name-attribute: preferred_username
+            registration:
+              keycloak:
+                authorization-grant-type: client_credentials
+                scope:
+                  - metrics
+                client-id: admin-service
+                client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+              login:
+                provider: keycloak
+                scope:
+                  - metrics
+                  - openid
+                client-id: admin-service
+                client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+              discovery:
+                provider: keycloak
+                client-id: admin-service
+                client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+                authorization-grant-type: client_credentials
+                scope:
+                  - discovery
+    management:
+      endpoints:
+        web:
+          exposure:
+            include:
+              - health
+              - prometheus
+    eureka:
+      client:
+        enabled: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-admin-server-deployment
+  labels:
+    app: market-admin-server
+spec:
+  selector:
+    matchLabels:
+      app: market-admin-server
+  template:
+    metadata:
+      labels:
+        app: market-admin-server
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: admin-server-config
+      containers:
+        - name: market-admin-server
+          image: host.docker.internal:5000/market/admin-server:25.1.1
+          imagePullPolicy: Always
+          args:
+            - --spring.config.import=/etc/opt/admin-server/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/admin-server
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-admin-server-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-admin-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-admin-server-ingress
+spec:
+  rules:
+    - host: admin.mar.ket.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-admin-server-svc
+                port:
+                  name: http

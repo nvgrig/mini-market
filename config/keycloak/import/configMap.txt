@@ -1,0 +1,2 @@
+выполнять из текущей папки
+kubectl create configmap market-keycloak-realm --from-file=market-k8s.json

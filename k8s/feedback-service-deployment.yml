@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feedback-service-config
+data:
+  application-k8s.yml: |
+    springdoc:
+      swagger-ui:
+        oauth:
+          client-id: feedback-service-swagger-ui
+          use-pkce-with-authorization-code-grant: true
+    keycloak:
+      uri: http://keycloak.mar.ket.127.0.0.1.nip.io
+    management:
+      health:
+        livenessstate:
+          enabled: true
+        readinessstate:
+          enabled: true
+      endpoints:
+        web:
+          exposure:
+            include: '*'
+    eureka:
+      client:
+        enabled: false
+    server:
+      forward-headers-strategy: framework
+      port: 8080
+    spring:
+      application:
+        name: market-feedback-service
+      boot:
+        admin:
+          client:
+            enabled: true
+            instance:
+              service-host-type: ip
+            url: http://market-admin-server-svc.default.svc.cluster.local:8080
+      cloud:
+        config:
+          enabled: false
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: http://host.docker.internal:8080/realms/market
+          client:
+            registration:
+              keycloak:
+                client-id: feedback-service
+                client-secret: Q2BOfWOfL85qJ9MA6fvLz9j56CQEcmHY
+                authorization-grant-type: client_credentials
+                scope:
+                  - metrics_server
+              discovery:
+                provider: keycloak
+                client-id: feedback-service
+                client-secret: Q2BOfWOfL85qJ9MA6fvLz9j56CQEcmHY
+                authorization-grant-type: client_credentials
+                scope:
+                  - discovery
+            provider:
+              keycloak:
+                issuer-uri: http://host.docker.internal:8080/realms/market
+      data:
+        mongodb:
+          uri: mongodb://host.docker.internal:27017/feedback
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-feedback-service-deployment
+  labels:
+    app: market-feedback-service
+spec:
+  selector:
+    matchLabels:
+      app: market-feedback-service
+  template:
+    metadata:
+      labels:
+        app: market-feedback-service
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: feedback-service-config
+      containers:
+        - name: market-feedback-service
+          image: host.docker.internal:5000/market/feedback-service:25.1.1
+          imagePullPolicy: Always
+          args:
+            - --spring.config.import=/etc/opt/feedback-service/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/feedback-service
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-feedback-service-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-feedback-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-feedback-service-ingress
+spec:
+  rules:
+    - host: feedback.api.mar.ket.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-feedback-service-svc
+                port:
+                  name: http

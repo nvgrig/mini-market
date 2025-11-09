@@ -1,0 +1,49 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: market-admin-server
+  cloud:
+    config:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak.mar.ket.127.0.0.1.nip.io/realms/market
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak.mar.ket.127.0.0.1.nip.io/realms/market
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            authorization-grant-type: client_credentials
+            scope:
+              - metrics
+            client-id: admin-service
+            client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+          login:
+            provider: keycloak
+            scope:
+              - metrics
+              - openid
+            client-id: admin-service
+            client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+          discovery:
+            provider: keycloak
+            client-id: admin-service
+            client-secret: DfAy6yFau7p1tOJ6YlJjpdXe1rUb4iPZ
+            authorization-grant-type: client_credentials
+            scope:
+              - discovery
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - prometheus
+eureka:
+  client:
+    enabled: false

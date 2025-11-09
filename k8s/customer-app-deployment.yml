@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customer-app-config
+data:
+  application-k8s.yml: |
+    market:
+      services:
+        catalogue:
+          uri: http://market-catalogue-service-svc.default.svc.cluster.local:8080
+        feedback:
+          uri: http://market-feedback-service-svc.default.svc.cluster.local:8080
+    spring:
+      application:
+        name: market-customer-app
+      boot:
+        admin:
+          client:
+            url: http://market-admin-server-svc.default.svc.cluster.local:8080
+            instance:
+              service-host-type: ip
+            enabled: true
+      cloud:
+        config:
+          enabled: false
+      security:
+        oauth2:
+          client:
+            provider:
+              keycloak:
+                issuer-uri: http://host.docker.internal:8080/realms/market
+                user-name-attribute: preferred_username
+            registration:
+              keycloak:
+                client-id: customer-app
+                client-secret: UKUNilO8jhlzJGDbbEqkiDSqJAFHGmto
+                client-name: market Keycloak
+                authorization-grant-type: authorization_code
+                scope:
+                  - openid
+                  - view_catalogue
+              metrics:
+                provider: keycloak
+                client-id: customer-app
+                client-secret: UKUNilO8jhlzJGDbbEqkiDSqJAFHGmto
+                authorization-grant-type: client_credentials
+                scope:
+                  - metrics_server
+              discovery:
+                provider: keycloak
+                client-id: customer-app
+                client-secret: UKUNilO8jhlzJGDbbEqkiDSqJAFHGmto
+                authorization-grant-type: client_credentials
+                scope:
+                  - discovery
+          resourceserver:
+            jwt:
+              issuer-uri: http://host.docker.internal:8080/realms/market
+    management:
+      health:
+        livenessstate:
+          enabled: true
+        readinessstate:
+          enabled: true
+      endpoints:
+        web:
+          exposure:
+            include: '*'
+    eureka:
+      client:
+        enabled: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-customer-app-deployment
+  labels:
+    app: market-customer-app
+spec:
+  selector:
+    matchLabels:
+      app: market-customer-app
+  template:
+    metadata:
+      labels:
+        app: market-customer-app
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: customer-app-config
+      containers:
+        - name: market-customer-app
+          image: host.docker.internal:5000/market/customer-app:25.1.1
+          args:
+            - --spring.config.import=/etc/opt/customer-app/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/customer-app
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-customer-app-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-customer-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-customer-app-ingress
+spec:
+  rules:
+    - host: customer.mar.ket.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-customer-app-svc
+                port:
+                  name: http

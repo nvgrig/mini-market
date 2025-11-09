@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manager-app-config
+data:
+  application-k8s.yml: |
+    market:
+      services:
+        catalogue:
+          uri: http://market-catalogue-service-svc.default.svc.cluster.local:8080
+          registration-id: keycloak
+    server:
+      forward-headers-strategy: native
+      port: 8080
+    spring:
+      application:
+        name: market-manager-app
+      boot:
+        admin:
+          client:
+            enabled: true
+            instance:
+              service-host-type: ip
+            url: http://market-admin-server-svc.default.svc.cluster.local:8080
+      cloud:
+        config:
+          enabled: false
+      security:
+        oauth2:
+          client:
+            provider:
+              keycloak:
+                issuer-uri: http://host.docker.internal:8080/realms/market
+                user-name-attribute: preferred_username
+            registration:
+              keycloak:
+                client-id: manager-app
+                client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+                scope:
+                  - openid
+                  - view_catalogue
+                  - edit_catalogue
+                  - microprofile-jwt
+              metrics:
+                provider: keycloak
+                client-id: manager-app
+                client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+                authorization-grant-type: client_credentials
+                scope:
+                  - metrics_server
+              discovery:
+                provider: keycloak
+                client-id: manager-app
+                client-secret: DhsFC50IXFDItvZc25VlYM65bcaknW36
+                authorization-grant-type: client_credentials
+                scope:
+                  - discovery
+          resourceserver:
+            jwt:
+              issuer-uri: http://host.docker.internal:8080/realms/market
+    management:
+      health:
+        livenessstate:
+          enabled: true
+        readinessstate:
+          enabled: true
+      endpoints:
+        web:
+          exposure:
+            include: '*'
+    eureka:
+      client:
+        enabled: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-manager-app-deployment
+  labels:
+    app: market-manager-app
+spec:
+  selector:
+    matchLabels:
+      app: market-manager-app
+  template:
+    metadata:
+      labels:
+        app: market-manager-app
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: manager-app-config
+      containers:
+        - name: market-manager-app
+          image: host.docker.internal:5000/market/manager-app:25.1.1
+          imagePullPolicy: Always
+          args:
+            - --spring.config.import=/etc/opt/manager-app/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/manager-app
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-manager-app-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-manager-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-manager-app-ingress
+spec:
+  rules:
+    - host: manager.mar.ket.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-manager-app-svc
+                port:
+                  name: http
