@@ -1,0 +1,62 @@
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: feedback-service-swagger-ui
+      use-pkce-with-authorization-code-grant: true
+keycloak:
+  uri: http://host.docker.internal:8080
+management:
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+eureka:
+  client:
+    enabled: false
+server:
+  forward-headers-strategy: framework
+  port: 8080
+spring:
+  application:
+    name: market-feedback-service
+  boot:
+    admin:
+      client:
+        enabled: true
+        instance:
+          service-host-type: ip
+        url: http://market-admin-server-svc.default.svc.cluster.local:8080
+  cloud:
+    config:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://host.docker.internal:8080/realms/market
+      client:
+        registration:
+          keycloak:
+            client-id: feedback-service
+            client-secret: Q2BOfWOfL85qJ9MA6fvLz9j56CQEcmHY
+            authorization-grant-type: client_credentials
+            scope:
+              - metrics_server
+          discovery:
+            provider: keycloak
+            client-id: feedback-service
+            client-secret: Q2BOfWOfL85qJ9MA6fvLz9j56CQEcmHY
+            authorization-grant-type: client_credentials
+            scope:
+              - discovery
+        provider:
+          keycloak:
+            issuer-uri: http://host.docker.internal:8080/realms/market
+  data:
+    mongodb:
+      uri: mongodb://host.docker.internal:27017/feedback

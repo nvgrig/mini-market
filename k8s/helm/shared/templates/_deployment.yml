@@ -1,0 +1,86 @@
+{{- define "shared.deployment" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+data:
+{{ (.Files.Glob "config/*").AsConfig | indent 2 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: market-{{ .Chart.Name }}-deployment
+  labels:
+    app: market-{{ .Chart.Name }}
+    helm.sh/chart: {{ .Chart.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: market-{{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: market-{{ .Chart.Name }}
+    spec:
+      volumes:
+        - name: service-config
+          configMap:
+            name: {{ .Chart.Name }}-config
+      containers:
+        - name: market-{{ .Chart.Name }}
+          image: {{ .Values.image }}
+          imagePullPolicy: Always
+          args:
+            - --spring.config.import=/etc/opt/{{ .Chart.Name }}/application-k8s.yml
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+          volumeMounts:
+            - mountPath: /etc/opt/{{ .Chart.Name }}
+              name: service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: market-{{ .Chart.Name }}-svc
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: market-{{ .Chart.Name }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: market-{{ .Chart.Name }}-ingress
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+spec:
+  rules:
+    - host: {{ .Values.ingress }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: market-{{ .Chart.Name }}-svc
+                port:
+                  name: http
+{{- end -}}
