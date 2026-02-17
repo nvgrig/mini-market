@@ -91,7 +91,7 @@ spec:
             name: customer-app-config
       containers:
         - name: market-customer-app
-          image: host.docker.internal:5000/market/customer-app:25.1.1
+          image: kubernetes.docker.internal:5000/market/customer-app:25.1.1
           args:
             - --spring.config.import=/etc/opt/customer-app/application-k8s.yml
           ports:

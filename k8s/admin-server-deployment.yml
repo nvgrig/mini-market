@@ -75,7 +75,7 @@ spec:
             name: admin-server-config
       containers:
         - name: market-admin-server
-          image: host.docker.internal:5000/market/admin-server:25.1.1
+          image: kubernetes.docker.internal:5000/market/admin-server:25.1.1
           imagePullPolicy: Always
           args:
             - --spring.config.import=/etc/opt/admin-server/application-k8s.yml

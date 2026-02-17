@@ -93,7 +93,7 @@ spec:
             name: manager-app-config
       containers:
         - name: market-manager-app
-          image: host.docker.internal:5000/market/manager-app:25.1.1
+          image: kubernetes.docker.internal:5000/market/manager-app:25.1.1
           imagePullPolicy: Always
           args:
             - --spring.config.import=/etc/opt/manager-app/application-k8s.yml

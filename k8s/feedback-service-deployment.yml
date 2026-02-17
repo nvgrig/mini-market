@@ -65,7 +65,7 @@ data:
                 issuer-uri: http://host.docker.internal:8080/realms/market
       data:
         mongodb:
-          uri: mongodb://host.docker.internal:27017/feedback
+          uri: mongodb://kubernetes.docker.internal:27017/feedback
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -88,7 +88,7 @@ spec:
             name: feedback-service-config
       containers:
         - name: market-feedback-service
-          image: host.docker.internal:5000/market/feedback-service:25.1.1
+          image: kubernetes.docker.internal:5000/market/feedback-service:25.1.1
           imagePullPolicy: Always
           args:
             - --spring.config.import=/etc/opt/feedback-service/application-k8s.yml
